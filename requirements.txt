@@ -6,7 +6,6 @@ djangorestframework==3.10.2
 h5py
 gunicorn
 nltk
-numpy==1.16.0
 oauthlib==3.0.2
 parso==0.2.0
 pathlib2==2.3.4
