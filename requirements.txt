@@ -15,3 +15,4 @@ pickleshare==0.7.4
 sklearn
 numpy
 requests
+matplotlib
