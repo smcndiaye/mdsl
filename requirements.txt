@@ -16,3 +16,4 @@ sklearn
 numpy
 requests
 matplotlib
+scikit-image

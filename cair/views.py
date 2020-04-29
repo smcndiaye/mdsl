@@ -1,4 +1,5 @@
 import matplotlib.image as mpimg
+from skimage.transform import  resize
 from django.shortcuts import render#,render_to_response
 from django.core.files.storage import FileSystemStorage
 from django.views.decorators.csrf import csrf_exempt
