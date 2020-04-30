@@ -100,15 +100,15 @@
 
 
 <div id="container"></div>
+<div class="row">
 
 <div id="info">
-    <p id="para" > name</p>
-  <p id="icon">Temperatur temp</p>
-  Visualizing Tempeture of some Frence Cities.
-</div>
+    <p id="para" > {% for temp in name %} {{temp}}, {% endfor %}</p>
+ </div>
 
 </div>
 
+</body>
   {% load static %}
 
 
@@ -132,7 +132,7 @@
   });
 
 
-  var jsonUrl = 'https://coronavirus-tracker-api.herokuapp.com/v2/locations';
+var jsonUrl = 'https://coronavirus-tracker-api.herokuapp.com/v2/locations';
 var request = new XMLHttpRequest();
 var data  = new Array();
 var names = new Array()
@@ -157,9 +157,9 @@ var response = JSON.parse(request.responseText);
     globe.createPoints();
     globe.animate();
     document.body.style.backgroundImage = 'none';
- 
+    
 }});
-
+setInterval(request.send(),90000)
 </script>
 
 
