@@ -114,10 +114,10 @@
 
 
 
-
 <script type="text/javascript" src="{%static 'js/Detector.js'%}"></script>
 <script type="text/javascript" src="{%static 'js/three.min.js'%}"></script>
 <script type="text/javascript" src="{%static 'js/globe.js'%}"></script>
+<script type="text/javascript" src="{%static 'js/RequestAnimationFrame.js'%}"></script>
 <script type="text/javascript">
 
   var globe = DAT.Globe(document.getElementById('container'), {
@@ -147,19 +147,23 @@ var response = JSON.parse(request.responseText);
       var death = response["locations"][i].latest.deaths;
       var name = response['locations'][i].country_code;
       var pct_death = death/confire;
-      data.push(Lat,Lon,pct_death,death);
+      data.push(Lat,Lon,pct_death,death)};
+      
       document.getElementById("para").innerHTML = name 
+      document.body.style.backgroundImage = 'none';
       //document.getElementById("icon").innerHTML = temp
-
     window.data = data;
      //console.log(data)
-    globe.addData(data, {format: 'legend'});
+     globe.addData(data, {format: 'legend'});
     globe.createPoints();
-    globe.animate();
-    document.body.style.backgroundImage = 'none';
     
-}});
-setInterval(request.send(),90000)
+});
+
+globe.animate();
+
+
+//setInterval(request.open(),90000)
+
 </script>
 
 
