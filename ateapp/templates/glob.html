@@ -154,12 +154,11 @@ var response = JSON.parse(request.responseText);
       //document.getElementById("icon").innerHTML = temp
     window.data = data;
      //console.log(data)
-     globe.addData(data, {format: 'legend'});
+    globe.addData(data, {format: 'legend'});
     globe.createPoints();
+    globe.animate();
     
 });
-
-globe.animate();
 
 
 //setInterval(request.open(),90000)

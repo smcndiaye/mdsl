@@ -1,98 +1,237 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>
-		
+	<title>		
 	</title>
-
     <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
 </head>
 <body>
            {%include 'navbaritems.html'%}
-<div class="row">
-  <!-- size 4 on a large screen, 12 on a small, 6 on a med -->
-    <div class="col l4 s12 m6">
-<canvas id="myChart" width="10" height="3"></canvas>
-</div>
-</div>
-
-<script type="text/javascript">
-
-const mdata  = new Array();
-const mytime = new Array();
-
-getData();
- async function ChartGet(){
-
-    const ctx = document.getElementById("myChart").getContext('2d');
-    const myChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels:mytime,
-            datasets: [{
-                label: 'MSFT Closing price',
-                data: mdata,
-                backgroundColor: '#cc65fe',
-                borderColor: '#808000',
-                fill: false ,
-                stacked: true
-
-            }]
-
-        },
-
+           <div class="row">
+            <!-- size 4 on a large screen, 12 on a small, 6 on a med -->
+              <div class="col l4 s12 m6">
+          
+           <label>SELECT SYMBOL</label>
+           <br>
+           <br>
+           <select id="ddlViewBy" onchange="showData()">
+               <option value="MSFT" >MICROSOFT</option>
+               <option value="FB" >FACEBOOK</option>
+               <option value="AMZN" >AMZON</option>
+               <option value="^FCHI" >CAC 40</option>
+               <option value="NFLX" >NETFLIX</option>
+               <option value="oil" >OIL</option>
+             </select>
    
-
-    });
-}
-
-
-function getData(){
-    
-const jsonUrl = "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=MSFT&outputsize=compact&apikey=C5WDU2PJTHJ9KBHK";
-const request = new XMLHttpRequest();
-
-
-request.open("GET", jsonUrl);
-request.send();
-
-request.addEventListener("load", async function() {
-    
-const response =  await JSON.parse(request.responseText);
-
-for (var i = 0; i < 100; i++){ 
-  const time = Object.keys(response['Time Series (Daily)'])[i]
-  const price = parseFloat(response['Time Series (Daily)'][time]['4. close'])
-  console.log(response['Meta Data']['2. Symbol'])
-mdata.push(price);
-mytime.push(time) ;
-window.mytime = mytime.sort();
-//var  = mytime.reverse();
-window.mdata = mdata.reverse();
-//console.log(mdata)
-;
-}
-await ChartGet()
-})};
- 
-
-
-
-</script>
-
-<script type="text/javascript">
-    
-
-//clearTimeout(5000);
+           <div id="tester" style="width:1260px;height:400px;"></div>
+              </div>
+           </div>
+         <script>
    
+   
+   //var theSelect;
+   var usr  = "FB";
+   
+   function showData() {
+       var theSelect = ddlViewBy;
+       usr = theSelect[theSelect.selectedIndex].value;
+          // console.log(usr)
+      
+   
+   var tmin;
+   var tmax;
+   var omin;
+   var omax;
+   const op  = new Array();
+   const hi  = new Array();
+   const lo  = new Array();
+   const cl  = new Array();
+   const vl  = new Array();
+   var myArray = [[]];
+   const mytime = new Array();
+   var jsonUrl = `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${usr}&outputsize=compact&apikey=C5WDU2PJTHJ9KBHK`;
+   const request = new XMLHttpRequest();
+   request.open("GET", jsonUrl);
+   request.send()
+   request.addEventListener("load", async function() {
+   const response =  await JSON.parse(request.responseText);
+   for (var i = 0; i < 100; i++){ 
+       const time = Object.keys(response['Time Series (Daily)'])[i]
+       const open = parseFloat(response['Time Series (Daily)'][time]['1. open']);
+       const high = parseFloat(response['Time Series (Daily)'][time]['2. high']);
+       const low = parseFloat(response['Time Series (Daily)'][time]['3. low']);
+       const close = parseFloat(response['Time Series (Daily)'][time]['4. close']);
+       const volume = parseFloat(response['Time Series (Daily)'][time]['5. volume']);
+      op.push(open)
+      hi.push(high)
+      lo.push(low)
+      cl.push(close)
+      vl.push(volume)
+       //console.log(response['Meta Data']['2. Symbol'])
+       mytime.push(time) ;
+       window.mytime = mytime.sort();
+       window.op = op.reverse();
+       window.hi = hi.reverse();
+       window.lo = lo.reverse();
+       window.cl = cl.reverse();
+       window.vl = vl.reverse();
+       tmin = mytime[0];
+       tmax = mytime[99];
+       omin = Math.min(...op);
+       omax = Math.max(...op);
+   }
+   var trace1 = {
+     x: mytime, 
+     close: cl, 
+     
+     decreasing: {line: {color: '#FF0000'}}, 
+     
+     high: hi, 
+     
+     increasing: {line: {color: '#17BECF'}}, 
+     
+     line: {color: 'rgba(31,119,180,1)'}, 
+     
+     low: lo, 
+     
+     open:op, 
+     
+     type: 'candlestick', 
+     xaxis: 'x', 
+     yaxis: 'y'
+   };
+   
+   var data = [trace1];
+   
+   var layout = {
+     dragmode: 'zoom', 
+     margin: {
+       r: 10, 
+       t: 25, 
+       b: 40, 
+       l: 60
+     }, 
+     showlegend: false, 
+     xaxis: {
+       autorange: true, 
+       //domain: [0, 1], 
+       range: [tmin, tmax], 
+       rangeslider: {range: [tmin, tmax]}, 
+       title: 'Date', 
+       type: 'date'
+     }, 
+     yaxis: {
+       autorange: true, 
+       //domain: [0, 1], 
+       range: [omin, omin], 
+       type: 'linear'
+     }
+   };
+   Plotly.newPlot('tester', data, layout)
+   }
+   )}
+   ;
+   
+   var tmin;
+   var tmax;
+   var omin;
+   var omax;
+   const op  = new Array();
+   const hi  = new Array();
+   const lo  = new Array();
+   const cl  = new Array();
+   const vl  = new Array();
+   var myArray = [[]];
+   const mytime = new Array();
+   var jsonUrl = 'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=MSFT&outputsize=compact&apikey=C5WDU2PJTHJ9KBHK';
+   const request = new XMLHttpRequest();
+   request.open("GET", jsonUrl);
+   request.send()
+   request.addEventListener("load", async function() {
+   const response =  await JSON.parse(request.responseText);
+   for (var i = 0; i < 100; i++){ 
+       const time = Object.keys(response['Time Series (Daily)'])[i]
+       const open = parseFloat(response['Time Series (Daily)'][time]['1. open']);
+       const high = parseFloat(response['Time Series (Daily)'][time]['2. high']);
+       const low = parseFloat(response['Time Series (Daily)'][time]['3. low']);
+       const close = parseFloat(response['Time Series (Daily)'][time]['4. close']);
+       const volume = parseFloat(response['Time Series (Daily)'][time]['5. volume']);
+      op.push(open)
+      hi.push(high)
+      lo.push(low)
+      cl.push(close)
+      vl.push(volume)
+       //console.log(response['Meta Data']['2. Symbol'])
+       mytime.push(time) ;
+       window.mytime = mytime.sort();
+       window.op = op.reverse();
+       window.hi = hi.reverse();
+       window.lo = lo.reverse();
+       window.cl = cl.reverse();
+       window.vl = vl.reverse();
+       tmin = mytime[0];
+       tmax = mytime[99];
+       omin = Math.min(...op);
+       omax = Math.max(...op);
+   // Exponential Moving Average
+   }
+   var trace1 = {
+     x: mytime, 
+     close: cl, 
+     
+     decreasing: {line: {color: '#FF0000'}}, 
+     
+     high: hi, 
+     
+     increasing: {line: {color: '#17BECF'}}, 
+     
+     line: {color: 'rgba(31,119,180,1)'}, 
+     
+     low: lo, 
+     
+     open:op, 
+     
+     type: 'candlestick', 
+     xaxis: 'x', 
+     yaxis: 'y'
+   };
+   
+   var data = [trace1];
+   
+   var layout = {
+     dragmode: 'zoom', 
+     margin: {
+       r: 10, 
+       t: 25, 
+       b: 40, 
+       l: 60
+     }, 
+     showlegend: false, 
+     xaxis: {
+       autorange: true, 
+       //domain: [0, 1], 
+       range: [tmin, tmax], 
+       rangeslider: {range: [tmin, tmax]}, 
+       title: 'Date', 
+       type: 'date'
+     }, 
+     yaxis: {
+       autorange: true, 
+       //domain: [0, 1], 
+       range: [omin, omin], 
+       type: 'linear'
+     }
+   };
+   Plotly.newPlot('tester', data, layout)
+   })
+   
+   
+       </script>
 
-
-//setTimout(datapi,5000)
-</script>
            {%include 'footer.html'%}
 
 </body>
-
 </html>
