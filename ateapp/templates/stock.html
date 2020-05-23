@@ -13,7 +13,7 @@
            <div class="row">
             <!-- size 4 on a large screen, 12 on a small, 6 on a med -->
               <div class="col l4 s12 m6">
-          
+              
            <label>SELECT SYMBOL</label>
            <br>
            <br>
@@ -25,15 +25,78 @@
                <option value="NFLX" >NETFLIX</option>
                <option value="oil" >OIL</option>
              </select>
-   
+              <p 'text-align:center' >Value-at-Risk 90%:</p>
+              <p id="para"  >{{vatr}}</p>
            <div id="tester" style="width:1260px;height:400px;"></div>
+           <div id="return" style="width:1260px;height:400px;"></div>
+           <div id="hist" style="width:1260px;height:400px;"></div>
+   
               </div>
            </div>
          <script>
    
    
    //var theSelect;
-   var usr  = "FB";
+var usr  = "FB";
+var vatr;
+function VaR(returns, alpha) {
+	// Compute the returns and remove the first element, always equals to NaN
+	var returns = returns.slice(1);
+	// Sort the returns from lowest to highest values
+	returns.sort(function(a, b) { return a - b;});
+	// Compute w
+	// C.f. p. 383 of the reference
+	var calpha = 1 - alpha;
+	var w = Math.floor(calpha * returns.length)
+	// Limit case (w equals to 0), return NaN
+	if (w == 0) {
+		return NaN;
+	}
+	// Otherwise, compute the value at risk as the w-th return
+	// C.f. (2) and (6) of the reference
+	var valAtRisk = -returns[w-1];
+	// Return the value at risk
+	return valAtRisk;
+}
+
+
+function returns(value){
+let ret  = new Array()
+ for(var i = 0 ;i < value.length; i++){
+   let v = (value[i-1]-value[i])/value[i]
+  ret.push(v)
+ }
+ return ret;
+}
+
+function ema(values,periode = 9){
+  let multiplayer = 2/(periode + 1)
+  periode--;
+  let prev_ema = null;
+  let ema = values.map((val,index,arr)=>{
+  if(index<periode){
+    val = null;
+  }else{
+    if(index==periode){
+      let sub_arr = arr.slice(index-periode,index+1);
+      val = avg(sub_arr);
+    }else{
+      val = (val-prev_ema)*multiplayer + prev_ema;
+      
+  
+    }
+    prev_ema = val
+  }
+  return val
+
+  },0)
+  return ema;
+}
+function avg(values){ 
+let sum = values.reduce((accumulator, currentValue) => {return accumulator + parseFloat(currentValue);},0)
+let avg = sum/values.length
+return avg
+}
    
    function showData() {
        var theSelect = ddlViewBy;
@@ -101,11 +164,20 @@
      
      type: 'candlestick', 
      xaxis: 'x', 
-     yaxis: 'y'
+     yaxis: 'y',
+     name:'OHLC'
    };
    
-   var data = [trace1];
-   
+   var trace2 = {
+    x: mytime,
+    y: ema(cl,9),
+    mode: 'lines',
+    type: 'scatter',
+    name: 'EMA n:9'
+};
+
+
+  var data = [trace1,trace2];
    var layout = {
      dragmode: 'zoom', 
      margin: {
@@ -114,7 +186,7 @@
        b: 40, 
        l: 60
      }, 
-     showlegend: false, 
+     showlegend: true, 
      xaxis: {
        autorange: true, 
        //domain: [0, 1], 
@@ -131,7 +203,31 @@
      }
    };
    Plotly.newPlot('tester', data, layout)
-   }
+   var trace = {
+    x: mytime,
+    y: returns(cl),
+    mode: 'lines',
+    type: 'scatter',
+    name: 'Returns'
+};
+
+var data1 = [trace];
+Plotly.newPlot('return', data1,layout)
+var t = {
+  showlegend: true, 
+    x: returns(cl),
+    type: 'histogram',
+    name: 'Returns Distribution',
+    opacity: 0.4,
+    marker: {
+     color: '#CC66FF',
+  },
+  };
+var data = [t];
+Plotly.newPlot('hist', data);
+vatr = VaR(returns(cl),0.9)
+document.getElementById("para").innerHTML = vatr
+}
    )}
    ;
    
@@ -196,11 +292,20 @@
      
      type: 'candlestick', 
      xaxis: 'x', 
-     yaxis: 'y'
+     yaxis: 'y',
+     name:'OHLC'
    };
    
-   var data = [trace1];
-   
+   var trace2 = {
+    x: mytime,
+    y: ema(cl,9),
+    mode: 'lines',
+    type: 'scatter',
+    name: 'EMA n:9'
+};
+
+
+var data = [trace1,trace2];   
    var layout = {
      dragmode: 'zoom', 
      margin: {
@@ -209,7 +314,7 @@
        b: 40, 
        l: 60
      }, 
-     showlegend: false, 
+     showlegend: true, 
      xaxis: {
        autorange: true, 
        //domain: [0, 1], 
@@ -226,12 +331,40 @@
      }
    };
    Plotly.newPlot('tester', data, layout)
+   var trace = {
+    x: mytime,
+    y: returns(cl),
+    mode: 'lines',
+    type: 'scatter',
+    name: 'Returns'
+};
+
+var data1 = [trace];
+Plotly.newPlot('return', data1,layout)
+var t = {
+  showlegend: true, 
+    x: returns(cl),
+    type: 'histogram',
+    name: 'Returns Distribution',
+    opacity: 0.4,
+    marker: {
+     color: '#CC66FF',
+  },
+  };
+var data = [t];
+Plotly.newPlot('hist', data);
+vatr = VaR(returns(cl),0.9)
+document.getElementById("para").innerHTML = vatr
    })
    
    
        </script>
 
            {%include 'footer.html'%}
-
+<style>
+p {
+text-align:center
+}
+            </style>
 </body>
 </html>
